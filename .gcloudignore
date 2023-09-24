@@ -12,6 +12,8 @@
 # below:
 .git
 .gitignore
+*.sql
+*.ipynb
 
 # Python pycache:
 __pycache__/
