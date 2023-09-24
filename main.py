@@ -5,6 +5,8 @@ import gcsfs
 from bs4 import BeautifulSoup
 import requests
 from Embeddings.save import save_embedding_from_text, get_embeddings_from_text
+from Embeddings.analyze import get_text_sumary, get_text_keywords, get_most_relevant_sentences, get_text_analysis
+from Embeddings.analyze import analyze_text
 
 app = Flask(__name__)
 
@@ -66,6 +68,31 @@ def get_embeddings():
     print(text)
     res = get_embeddings_from_text(text)
     return jsonify({"pls":res})
+
+@app.route("/api/get_sumary")
+def get_sumary():
+    id = request.get_json()["id"]
+    res = get_text_sumary(id)
+    return jsonify(res.content)
+
+@app.route("/api/get_keywords")
+def get_keywords():
+    id = request.get_json()["id"]
+    res = get_text_keywords(id)
+    return jsonify(res)
+
+@app.route("/api/relevant_sentences")
+def relevant_sentences():
+    id = request.get_json()["id"]
+    res = get_most_relevant_sentences(id)
+    return jsonify(res)
+
+@app.route("/api/analyze")
+def analyze():
+    text = request.get_json()["text"]
+    print(text) 
+    res = analyze_text(text)
+    return jsonify(res)
 
 if __name__ == "__main__":
     app.run(debug=True, host="localhost", port=5000)

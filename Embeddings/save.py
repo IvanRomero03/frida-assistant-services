@@ -1,6 +1,7 @@
 from softtek_llm.embeddings import OpenAIEmbeddings
 from softtek_llm.vectorStores import SupabaseVectorStore
 from softtek_llm.vectorStores import Vector
+from Text.parse import parseText
 from dotenv import load_dotenv
 import os
 
@@ -24,25 +25,47 @@ if not OPENAI_EMBEDDINGS_MODEL_NAME:
 OPENAI_API_BASE = os.getenv("OPENAI_API_BASE")
 if not OPENAI_API_BASE:
     raise ValueError("OPENAI_API_BASE is not set")
-
+embeddings_model = OpenAIEmbeddings(
+    api_key=OPENAI_API_KEY,
+    model_name=OPENAI_EMBEDDINGS_MODEL_NAME,
+    api_type="azure",
+    api_base=OPENAI_API_BASE,
+)
+vector_store = SupabaseVectorStore(
+    api_key=SUPABASE_API_KEY,
+    url=SUPABASE_URL,
+    index_name=SUPABASE_INDEX_NAME,
+)
 def get_embeddings_from_text(text):
-    embeddings_model = OpenAIEmbeddings(
-        api_key=OPENAI_API_KEY,
-        model_name=OPENAI_EMBEDDINGS_MODEL_NAME,
-        api_type="azure",
-        api_base=OPENAI_API_BASE,
-    )
     return embeddings_model.embed(text)
 
+def save_multiple_embeddings(list):
+    res = vector_store.add(vectors=list)
+    ids = [{"id": i["id"]} for i in res]
+    return ids
+
+def save_text(text):
+    paragraphs = parseText(text)
+    embeddings = []
+    for paragraph in paragraphs:
+        embeddings.append(Vector(embeddings=get_embeddings_from_text(paragraph)))
+    res = vector_store.add(vectors=embeddings)
+    ids = [{"id": i["id"]} for i in res]
+    return ids
+
 def save_embedding_from_text(text, id = None):
-    vector_store = SupabaseVectorStore(
-        api_key=SUPABASE_API_KEY,
-        url=SUPABASE_URL,
-        index_name=SUPABASE_INDEX_NAME,
-    )
     emb = get_embeddings_from_text(text)
     new_vector = Vector(embeddings=emb, id=id)
     res = vector_store.add(vectors=[new_vector])
-    return [{"id": i.id} for i in res]
+    print(res)
+    return [{"id": i["id"]} for i in res]
+
+def get_embeddings_from_bigtext(text):
+    paragraphs = parseText(text)
+    embeddings = []
+    for paragraph in paragraphs:
+        embeddings.append(Vector(embeddings=get_embeddings_from_text(paragraph)))
+    
+    return embeddings
 
 
