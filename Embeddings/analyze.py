@@ -6,7 +6,7 @@ from softtek_llm.models import OpenAI
 from softtek_llm.cache import Cache
 from dotenv import load_dotenv
 from Text.parse import parseText
-from .save import get_embeddings_from_text, save_multiple_embeddings
+from .save import get_embeddings_from_text, save_multiple_embeddings, save_embedding_from_text
 from .search import search
 import uuid
 import os
@@ -85,6 +85,7 @@ def get_text_analysis(text):
 
 def analyze_text(text):
     print("aqui")
+    main_emb = save_embedding_from_text(text)[0]["id"]
     parsed_text = parseText(text)
     print("DEBUG", parsed_text)
     embeddings = []
@@ -119,7 +120,8 @@ def analyze_text(text):
         "summary": sumary,
         "keywords": keywords,
         "relevant_sentences": relevan_sentences,
-        "ids": [i["id"] for i in ids]
+        "ids": [i["id"] for i in ids],
+        "main_emb": main_emb,
     }
 
 
