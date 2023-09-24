@@ -7,8 +7,10 @@ import requests
 from Embeddings.save import save_embedding_from_text, get_embeddings_from_text
 from Embeddings.analyze import get_text_sumary, get_text_keywords, get_most_relevant_sentences, get_text_analysis
 from Embeddings.analyze import analyze_text
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 @app.route("/api/test")
 def test():
@@ -87,7 +89,7 @@ def relevant_sentences():
     res = get_most_relevant_sentences(id)
     return jsonify(res)
 
-@app.route("/api/analyze")
+@app.route("/api/analyze", methods=["POST"])
 def analyze():
     text = request.get_json()["text"]
     print(text) 

@@ -118,7 +118,8 @@ def analyze_text(text):
     return {
         "summary": sumary,
         "keywords": keywords,
-        "relevant_sentences": relevan_sentences
+        "relevant_sentences": relevan_sentences,
+        "ids": [i["vec"].id for i in ids]
     }
 
 
