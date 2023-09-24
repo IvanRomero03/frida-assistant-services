@@ -8,6 +8,7 @@ from Embeddings.save import save_embedding_from_text, get_embeddings_from_text
 from Embeddings.analyze import get_text_sumary, get_text_keywords, get_most_relevant_sentences, get_text_analysis
 from Embeddings.analyze import analyze_text
 from flask_cors import CORS
+import io
 
 app = Flask(__name__)
 CORS(app)
@@ -24,24 +25,24 @@ def not_found(error):
 def server_error(error):
     return jsonify({"error": "Internal server error"}), 500
 
-@app.route("/api/pdf_scrapper")
+@app.route("/api/pdf_scrapper", methods=["POST"])
 def parse_pdf():
     gcs_pdf_path = request.get_json()["gcs_pdf_path"]
+    print(gcs_pdf_path)
     #works url gsutil url
-    gcs_file_system = gcsfs.GCSFileSystem(project="frida-file-bucket", token="credentials.json")
-
-    f_object = gcs_file_system.open(gcs_pdf_path, "rb")
-    pdf = PdfReader(f_object)
-    number_of_pages = len(pdf.pages)
     parsed_text = ""
-
-    for i in range (number_of_pages):
-        page = pdf.pages[i]
-        parsed_text = parsed_text + page.extract_text() + "\n"
-    
+    response = requests.get(gcs_pdf_path)
+    with io.BytesIO(response.content) as f_object:
+        pdf = PdfReader(f_object)
+        number_of_pages = len(pdf.pages)
+        
+        for i in range (number_of_pages):
+            page = pdf.pages[i]
+            parsed_text = parsed_text + page.extract_text() + "\n"
+        
     return jsonify({"text": parsed_text})
 
-@app.route("/api/web_scrapper")
+@app.route("/api/web_scrapper", methods=["POST"])
 # URL of the page to be scraped
 def scrap_text():
     url = request.get_json()["url"]
@@ -54,9 +55,10 @@ def scrap_text():
     parsed_text = ""
     # Print all paragraph texts
     for par in soup.find_all(['h1','h2','p','table']):
-        parsed_text = parsed_text + par.name + " : " + par.text + "\n" 
+        parsed_text = parsed_text + par.text + "\n" 
 
     return jsonify({"text": parsed_text})    
+
 
 @app.route("/api/save_embeddings")
 def save_embeddings():
