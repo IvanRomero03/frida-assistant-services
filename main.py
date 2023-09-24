@@ -65,7 +65,7 @@ def get_embeddings():
     text = request.get_json()["text"]
     print(text)
     res = get_embeddings_from_text(text)
-    return jsonify(res)
+    return jsonify({"pls":res})
 
 if __name__ == "__main__":
     app.run(debug=True, host="localhost", port=5000)
